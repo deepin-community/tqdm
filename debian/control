@@ -1,0 +1,31 @@
+Source: tqdm
+Section: python
+Priority: optional
+Maintainer: Sandro Tosi <morph@debian.org>
+Uploaders: Debian Python Team <team+python@tracker.debian.org>,
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-docopt,
+               python3-keras <!nocheck>,
+               python3-pandas <!nocheck>,
+               python3-pytest <!nocheck>,
+               python3-pytest-asyncio <!nocheck>,
+               python3-rich <!nocheck>,
+               python3-setuptools,
+               python3-tk <!nocheck>,
+Standards-Version: 4.5.1
+Homepage: https://github.com/tqdm/tqdm
+Vcs-Git: https://salsa.debian.org/python-team/packages/tqdm.git
+Vcs-Browser: https://salsa.debian.org/python-team/packages/tqdm
+
+Package: python3-tqdm
+Architecture: all
+Depends: ${misc:Depends},
+         ${python3:Depends},
+Description: fast, extensible progress bar for Python 3 and CLI tool
+ tqdm (read taqadum, تقدّم) means “progress” in Arabic.  tqdm instantly makes
+ your loops show a smart progress meter, just by wrapping any iterable with
+ "tqdm(iterable)".
+ .
+ This package contains the Python 3 version of tqdm and its command-line tool.

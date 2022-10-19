@@ -1,0 +1,191 @@
+tqdm (4.57.0-2) unstable; urgency=medium
+
+  * debian/patches/dont-use-setuptools-scm.patch
+    - since we disabled setuptools_scm, we need to explicly retrieve and set
+      tqdm version, so that egginfo has the right version too; Closes: #983007
+
+ -- Sandro Tosi <morph@debian.org>  Fri, 05 Mar 2021 03:57:27 -0500
+
+tqdm (4.57.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/patches/pytest6-compat.patch
+    - refresh patch
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 17 Feb 2021 23:24:33 -0500
+
+tqdm (4.56.2-1) unstable; urgency=medium
+
+  * New upstream release; Closes: #980680
+  * Use the new Debian Python Team contact name and address
+  * debian/copyright
+    - extend packaging copyright years
+    - update upstream copyright years
+  * debian/patches/dont-use-setuptools-scm.patch
+    - dont use setuptools scm
+  * debian/patches/pytest6-compat.patch
+    - drop durations-min, not compatible with the version of pytest we have in
+      unstable at this time
+    - remove -W=error, several warnings with Pandas need to be resolved first
+  * debian/patches/*
+    - refresh patches
+  * debian/control
+    - add keras, pytest-asyncio, rich, tk to b-d, needed by tests
+    - bump Standards-Version to 4.5.1 (no changes needed)
+  * debian/rules
+    - disable test_keras, currently failing in theano
+  * debian/watch
+    - bump version to 4
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 17 Feb 2021 01:11:25 -0500
+
+tqdm (4.51.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Sandro Tosi ]
+  * New upstream release
+  * debian/patches
+    - remove patch, no longer required
+  * switch to nose to pytest
+  * debian/control
+    - build/test/install for all availble python3 versions
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 25 Oct 2020 23:28:37 -0400
+
+tqdm (4.48.2-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release.
+
+ -- Emmanuel Arias <eamanu@yaerobi.com>  Tue, 18 Aug 2020 22:52:19 -0300
+
+tqdm (4.48.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/rules
+    - dont run the test_comppath test, requires tqdm to be installed
+  * debian/control
+    - wrap-and-sort
+    - bump Standards-Version to 4.5.0 (no changes needed)
+    - bump compat level to 13
+
+ -- Sandro Tosi <morph@debian.org>  Mon, 03 Aug 2020 01:35:20 -0400
+
+tqdm (4.43.0-1) unstable; urgency=medium
+
+  * New upstream release; Closes: #951982
+  * debian/copyright
+    - update upstream copyright notice
+    - extend packaging copyright years
+  * debian/patches/0001-skip-tests.patch
+    - refresh patch
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 04 Mar 2020 22:47:05 -0500
+
+tqdm (4.30.0-1) unstable; urgency=medium
+
+  [ Sandro Tosi ]
+  * New upstream release
+  * debian/copyright
+    - update to new upstream code
+  * debian/patches/0001-skip-tests.patch
+    - update patch to new upstream code
+  * Drop python2 support; Closes: #938681
+  * debian/control
+    - bump Standards-Version to 4.4.1 (no changes needed)
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 06 Oct 2019 13:51:14 -0400
+
+tqdm (4.28.1-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Convert git repository from git-dpm to gbp layout
+
+  [ Sandro Tosi ]
+  * New upstream release
+  * debian/rules
+    - new location of manpage
+  * debian/control
+    - bump Standards-Version to 4.2.1 (no changes needed)
+    - add pandas to b-d, needed by tests
+  * debian/patches/0001-skip-tests.patch
+    - skip some failing tests
+
+ -- Sandro Tosi <morph@debian.org>  Tue, 25 Dec 2018 15:11:24 -0500
+
+tqdm (4.23.4-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Set Vcs-* to salsa.debian.org
+
+  [ Sandro Tosi ]
+  * New upstream release
+  * debian/copyright
+    - extend packaging copyright years
+    - update upstream copyright years
+  * debian/control
+    - bump Standards-Version to 4.1.4 (no changes needed)
+
+ -- Sandro Tosi <morph@debian.org>  Fri, 08 Jun 2018 16:33:14 -0400
+
+tqdm (4.19.5-1) unstable; urgency=medium
+
+  * New upstream release; Closes: #885898
+  * debian/copyright
+    - extend packaging copyright notice
+    - update upstream copyright information
+  * debian/control
+    - bump Standards-Version to 4.1.3 (no changes needed)
+  * debian/rules
+    - install tqdm manpage only in py3k package
+    - install all examples and dont compress files with py extension
+    - run tests in verbose mode
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 31 Dec 2017 22:44:14 -0500
+
+tqdm (4.11.2-1) unstable; urgency=medium
+
+  * New upstream release; Closes: #849632
+
+ -- Sandro Tosi <morph@debian.org>  Mon, 23 Jan 2017 19:30:01 -0500
+
+tqdm (4.11.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/rules
+    - install CONTRIBUTING.md as doc
+    - run performance tests in a separate, non-failing, command; Closes: #851591
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 22 Jan 2017 16:13:28 -0500
+
+tqdm (4.10.0-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Sandro Tosi <morph@debian.org>  Sat, 10 Dec 2016 18:37:28 -0500
+
+tqdm (4.8.4-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 02 Oct 2016 16:24:18 -0400
+
+tqdm (4.7.4-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/rules
+    - dont install RELEASE, removed upstream
+
+ -- Sandro Tosi <morph@debian.org>  Sat, 11 Jun 2016 19:18:08 +0100
+
+tqdm (4.4.1-1) unstable; urgency=low
+
+  * Initial release; Closes: #821174
+
+ -- Sandro Tosi <morph@debian.org>  Sat, 23 Apr 2016 13:43:49 +0100

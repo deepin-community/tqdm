@@ -1,0 +1,2 @@
+dont-use-setuptools-scm.patch
+pytest6-compat.patch
