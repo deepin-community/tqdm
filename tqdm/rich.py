@@ -11,8 +11,7 @@ from __future__ import absolute_import
 from warnings import warn
 
 from rich.progress import (
-    BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn,
-    filesize)
+    BarColumn, Progress, ProgressColumn, Text, TimeElapsedColumn, TimeRemainingColumn, filesize)
 
 from .std import TqdmExperimentalWarning
 from .std import tqdm as std_tqdm
@@ -74,12 +73,8 @@ class RateColumn(ProgressColumn):
 
 
 class tqdm_rich(std_tqdm):  # pragma: no cover
-    """
-    Experimental rich.progress GUI version of tqdm!
-    """
-
+    """Experimental rich.progress GUI version of tqdm!"""
     # TODO: @classmethod: write()?
-
     def __init__(self, *args, **kwargs):
         """
         This class accepts the following parameters *in addition* to
@@ -89,12 +84,15 @@ class tqdm_rich(std_tqdm):  # pragma: no cover
         ----------
         progress  : tuple, optional
             arguments for `rich.progress.Progress()`.
+        options  : dict, optional
+            keyword arguments for `rich.progress.Progress()`.
         """
         kwargs = kwargs.copy()
         kwargs['gui'] = True
         # convert disable = None to False
         kwargs['disable'] = bool(kwargs.get('disable', False))
         progress = kwargs.pop('progress', None)
+        options = kwargs.pop('options', {}).copy()
         super(tqdm_rich, self).__init__(*args, **kwargs)
 
         if self.disable:
@@ -113,14 +111,15 @@ class tqdm_rich(std_tqdm):  # pragma: no cover
                 ",", RateColumn(unit=d['unit'], unit_scale=d['unit_scale'],
                                 unit_divisor=d['unit_divisor']), "]"
             )
-        self._prog = Progress(*progress, transient=not self.leave)
+        options.setdefault('transient', not self.leave)
+        self._prog = Progress(*progress, **options)
         self._prog.__enter__()
         self._task_id = self._prog.add_task(self.desc or "", **d)
 
-    def close(self, *args, **kwargs):
+    def close(self):
         if self.disable:
             return
-        super(tqdm_rich, self).close(*args, **kwargs)
+        super(tqdm_rich, self).close()
         self._prog.__exit__(None, None, None)
 
     def clear(self, *_, **__):

@@ -4,17 +4,17 @@ Priority: optional
 Maintainer: Sandro Tosi <morph@debian.org>
 Uploaders: Debian Python Team <team+python@tracker.debian.org>,
 Build-Depends: debhelper-compat (= 13),
-               dh-python,
+               pybuild-plugin-pyproject,
                python3-all,
                python3-docopt,
-               python3-keras <!nocheck>,
                python3-pandas <!nocheck>,
                python3-pytest <!nocheck>,
                python3-pytest-asyncio <!nocheck>,
+               python3-pytest-timeout <!nocheck>,
                python3-rich <!nocheck>,
                python3-setuptools,
                python3-tk <!nocheck>,
-Standards-Version: 4.5.1
+Standards-Version: 4.6.2.0
 Homepage: https://github.com/tqdm/tqdm
 Vcs-Git: https://salsa.debian.org/python-team/packages/tqdm.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/tqdm

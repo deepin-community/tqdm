@@ -20,9 +20,9 @@ from weakref import WeakSet
 
 from ._monitor import TMonitor
 from .utils import (
-    CallbackIOWrapper, Comparable, DisableOnWriteError, FormatReplace,
-    SimpleTextIOWrapper, _basestring, _is_ascii, _range, _screen_shape_wrapper,
-    _supports_unicode, _term_move_up, _unich, _unicode, disp_len, disp_trim)
+    CallbackIOWrapper, Comparable, DisableOnWriteError, FormatReplace, SimpleTextIOWrapper,
+    _basestring, _is_ascii, _range, _screen_shape_wrapper, _supports_unicode, _term_move_up,
+    _unich, _unicode, disp_len, disp_trim)
 
 __author__ = "https://github.com/tqdm/tqdm#contributions"
 __all__ = ['tqdm', 'trange',
@@ -209,8 +209,7 @@ class Bar(object):
 
         res = charset[-1] * bar_length
         if bar_length < N_BARS:  # whitespace padding
-            res = res + charset[frac_bar_length] + \
-                charset[0] * (N_BARS - bar_length - 1)
+            res = res + charset[frac_bar_length] + charset[0] * (N_BARS - bar_length - 1)
         return self.colour + res + self.COLOUR_RESET if self.colour else res
 
 
@@ -336,6 +335,9 @@ class tqdm(Comparable):
         """
         fp = file
         fp_flush = getattr(fp, 'flush', lambda: None)  # pragma: no cover
+        if fp in (sys.stderr, sys.stdout):
+            getattr(sys.stderr, 'flush', lambda: None)()
+            getattr(sys.stdout, 'flush', lambda: None)()
 
         def fp_write(s):
             fp.write(_unicode(s))
@@ -449,8 +451,7 @@ class tqdm(Comparable):
 
         if unit_scale:
             n_fmt = format_sizeof(n, divisor=unit_divisor)
-            total_fmt = format_sizeof(total, divisor=unit_divisor) \
-                if total is not None else '?'
+            total_fmt = format_sizeof(total, divisor=unit_divisor) if total is not None else '?'
         else:
             n_fmt = str(n)
             total_fmt = str(total) if total is not None else '?'
@@ -463,8 +464,8 @@ class tqdm(Comparable):
         remaining = (total - n) / rate if rate and total else 0
         remaining_str = tqdm.format_interval(remaining) if rate else '?'
         try:
-            eta_dt = datetime.now() + timedelta(seconds=remaining) \
-                if rate and total else datetime.utcfromtimestamp(0)
+            eta_dt = (datetime.now() + timedelta(seconds=remaining)
+                      if rate and total else datetime.utcfromtimestamp(0))
         except OverflowError:
             eta_dt = datetime.max
 
@@ -553,9 +554,8 @@ class tqdm(Comparable):
             return disp_trim(res, ncols) if ncols else res
         else:
             # no total: no progressbar, ETA, just progress stats
-            return ((prefix + ": ") if prefix else '') + \
-                '{0}{1} [{2}, {3}{4}]'.format(
-                    n_fmt, unit, elapsed_str, rate_fmt, postfix)
+            return '{0}{1}{2} [{3}, {4}{5}]'.format(
+                (prefix + ": ") if prefix else '', n_fmt, unit, elapsed_str, rate_fmt, postfix)
 
     def __new__(cls, *_, **__):
         instance = object.__new__(cls)
@@ -672,7 +672,7 @@ class tqdm(Comparable):
             | groupby.(generic.)SeriesGroupBy
             ).progress_apply
 
-        A new instance will be create every time `progress_apply` is called,
+        A new instance will be created every time `progress_apply` is called,
         and each instance will automatically `close()` upon completion.
 
         Parameters
@@ -763,8 +763,8 @@ class tqdm(Comparable):
                         total = df.size
                     elif isinstance(df, Series):
                         total = len(df)
-                    elif _Rolling_and_Expanding is None or \
-                            not isinstance(df, _Rolling_and_Expanding):
+                    elif (_Rolling_and_Expanding is None or
+                          not isinstance(df, _Rolling_and_Expanding)):
                         # DataFrame or Panel
                         axis = kwargs.get('axis', 0)
                         if axis == 'index':
@@ -790,8 +790,12 @@ class tqdm(Comparable):
                         " Use keyword arguments instead.",
                         fp_write=getattr(t.fp, 'write', sys.stderr.write))
 
+                try:  # pandas>=1.3.0
+                    from pandas.core.common import is_builtin_func
+                except ImportError:
+                    is_builtin_func = df._is_builtin_func
                 try:
-                    func = df._is_builtin_func(func)
+                    func = is_builtin_func(func)
                 except TypeError:
                     pass
 
@@ -844,7 +848,8 @@ class tqdm(Comparable):
                  ascii=None, disable=False, unit='it', unit_scale=False,
                  dynamic_ncols=False, smoothing=0.3, bar_format=None, initial=0,
                  position=None, postfix=None, unit_divisor=1000, write_bytes=None,
-                 lock_args=None, nrows=None, colour=None, gui=False, **kwargs):
+                 lock_args=None, nrows=None, colour=None, delay=0, gui=False,
+                 **kwargs):
         """
         Parameters
         ----------
@@ -951,6 +956,8 @@ class tqdm(Comparable):
             The fallback is 20.
         colour  : str, optional
             Bar colour (e.g. 'green', '#00ff00').
+        delay  : float, optional
+            Don't display until [default: 0] seconds have elapsed.
         gui  : bool, optional
             WARNING: internal parameter - do not use.
             Use tqdm.gui.tqdm(...) instead. If set, will attempt to use
@@ -1011,9 +1018,9 @@ class tqdm(Comparable):
                 TqdmKeyError("Unknown argument(s): " + str(kwargs)))
 
         # Preprocess the arguments
-        if ((ncols is None or nrows is None) and
-            (file in (sys.stderr, sys.stdout))) or \
-                dynamic_ncols:  # pragma: no cover
+        if (
+            (ncols is None or nrows is None) and (file in (sys.stderr, sys.stdout))
+        ) or dynamic_ncols:  # pragma: no cover
             if dynamic_ncols:
                 dynamic_ncols = _screen_shape_wrapper()
                 if dynamic_ncols:
@@ -1042,7 +1049,7 @@ class tqdm(Comparable):
         if ascii is None:
             ascii = not _supports_unicode(file)
 
-        if bar_format and not ((ascii is True) or _is_ascii(ascii)):
+        if bar_format and ascii is not True and not _is_ascii(ascii):
             # Convert bar format into unicode since terminal uses unicode
             bar_format = _unicode(bar_format)
 
@@ -1068,6 +1075,7 @@ class tqdm(Comparable):
         self.unit_divisor = unit_divisor
         self.initial = initial
         self.lock_args = lock_args
+        self.delay = delay
         self.gui = gui
         self.dynamic_ncols = dynamic_ncols
         self.smoothing = smoothing
@@ -1091,15 +1099,14 @@ class tqdm(Comparable):
         # if nested, at initial sp() call we replace '\r' by '\n' to
         # not overwrite the outer progress bar
         with self._lock:
-            if position is None:
-                self.pos = self._get_free_pos(self)
-            else:  # mark fixed positions as negative
-                self.pos = -position
+            # mark fixed positions as negative
+            self.pos = self._get_free_pos(self) if position is None else -position
 
         if not gui:
             # Initialize the screen printer
             self.sp = self.status_printer(self.fp)
-            self.refresh(lock_args=self.lock_args)
+            if delay <= 0:
+                self.refresh(lock_args=self.lock_args)
 
         # Init the time counter
         self.last_print_t = self._time()
@@ -1117,10 +1124,27 @@ class tqdm(Comparable):
         return self.__bool__()
 
     def __len__(self):
-        return self.total if self.iterable is None else \
-            (self.iterable.shape[0] if hasattr(self.iterable, "shape")
-             else len(self.iterable) if hasattr(self.iterable, "__len__")
-             else getattr(self, "total", None))
+        return (
+            self.total if self.iterable is None
+            else self.iterable.shape[0] if hasattr(self.iterable, "shape")
+            else len(self.iterable) if hasattr(self.iterable, "__len__")
+            else self.iterable.__length_hint__() if hasattr(self.iterable, "__length_hint__")
+            else getattr(self, "total", None))
+
+    def __reversed__(self):
+        try:
+            orig = self.iterable
+        except AttributeError:
+            raise TypeError("'tqdm' object is not reversible")
+        else:
+            self.iterable = reversed(self.iterable)
+            return self.__iter__()
+        finally:
+            self.iterable = orig
+
+    def __contains__(self, item):
+        contains = getattr(self.iterable, '__contains__', None)
+        return contains(item) if contains is not None else item in self.__iter__()
 
     def __enter__(self):
         return self
@@ -1163,6 +1187,7 @@ class tqdm(Comparable):
         mininterval = self.mininterval
         last_print_t = self.last_print_t
         last_print_n = self.last_print_n
+        min_start_t = self.start_t + self.delay
         n = self.n
         time = self._time
 
@@ -1174,8 +1199,9 @@ class tqdm(Comparable):
                 n += 1
 
                 if n - last_print_n >= self.miniters:
-                    dt = time() - last_print_t
-                    if dt >= mininterval:
+                    cur_t = time()
+                    dt = cur_t - last_print_t
+                    if dt >= mininterval and cur_t >= min_start_t:
                         self.update(n - last_print_n)
                         last_print_n = self.last_print_n
                         last_print_t = self.last_print_t
@@ -1218,8 +1244,9 @@ class tqdm(Comparable):
 
         # check counter first to reduce calls to time()
         if self.n - self.last_print_n >= self.miniters:
-            dt = self._time() - self.last_print_t
-            if dt >= self.mininterval:
+            cur_t = self._time()
+            dt = cur_t - self.last_print_t
+            if dt >= self.mininterval and cur_t >= self.start_t + self.delay:
                 cur_t = self._time()
                 dn = self.n - self.last_print_n  # >= n
                 if self.smoothing and dt and dn:
@@ -1260,6 +1287,10 @@ class tqdm(Comparable):
         # decrement instance pos and remove from internal set
         pos = abs(self.pos)
         self._decr_instances(self)
+
+        if self.last_print_t < self.start_t + self.delay:
+            # haven't ever displayed; nothing to clear
+            return
 
         # GUI mode
         if getattr(self, 'sp', None) is None:
@@ -1424,7 +1455,7 @@ class tqdm(Comparable):
     def moveto(self, n):
         # TODO: private method
         self.fp.write(_unicode('\n' * n + _term_move_up() * -n))
-        self.fp.flush()
+        getattr(self.fp, 'flush', lambda: None)()
 
     @property
     def format_dict(self):

@@ -14,6 +14,7 @@ from __future__ import absolute_import, division
 # import compatibility functions and utilities
 import re
 import sys
+from weakref import proxy
 
 # to inherit from the tqdm class
 from .std import tqdm as std_tqdm
@@ -22,14 +23,9 @@ from .utils import _range
 if True:  # pragma: no cover
     # import IPython/Jupyter base widget and display utilities
     IPY = 0
-    IPYW = 0
     try:  # IPython 4.x
         import ipywidgets
         IPY = 4
-        try:
-            IPYW = int(ipywidgets.__version__.split('.')[0])
-        except AttributeError:  # __version__ may not exist in old versions
-            pass
     except ImportError:  # IPython 3.x / 2.x
         IPY = 32
         import warnings
@@ -37,7 +33,7 @@ if True:  # pragma: no cover
             warnings.filterwarnings(
                 'ignore', message=".*The `IPython.html` package has been deprecated.*")
             try:
-                import IPython.html.widgets as ipywidgets
+                import IPython.html.widgets as ipywidgets  # NOQA: F401
             except ImportError:
                 pass
 
@@ -75,22 +71,27 @@ if True:  # pragma: no cover
 
 __author__ = {"github.com/": ["lrq3000", "casperdcl", "alexanderkuk"]}
 __all__ = ['tqdm_notebook', 'tnrange', 'tqdm', 'trange']
+WARN_NOIPYW = ("IProgress not found. Please update jupyter and ipywidgets."
+               " See https://ipywidgets.readthedocs.io/en/stable"
+               "/user_install.html")
 
 
 class TqdmHBox(HBox):
     """`ipywidgets.HBox` with a pretty representation"""
-    def _repr_json_(self, pretty=None):
-        if not hasattr(self, "pbar"):
+    def _json_(self, pretty=None):
+        pbar = getattr(self, 'pbar', None)
+        if pbar is None:
             return {}
-        d = self.pbar.format_dict
+        d = pbar.format_dict
         if pretty is not None:
             d["ascii"] = not pretty
         return d
 
     def __repr__(self, pretty=False):
-        if not hasattr(self, "pbar"):
+        pbar = getattr(self, 'pbar', None)
+        if pbar is None:
             return super(TqdmHBox, self).__repr__()
-        return self.pbar.format_meter(**self._repr_json_(pretty))
+        return pbar.format_meter(**self._json_(pretty))
 
     def _repr_pretty_(self, pp, *_, **__):
         pp.text(self.__repr__(True))
@@ -114,10 +115,7 @@ class tqdm_notebook(std_tqdm):
 
         # Prepare IPython progress bar
         if IProgress is None:  # #187 #451 #558 #872
-            raise ImportError(
-                "IProgress not found. Please update jupyter and ipywidgets."
-                " See https://ipywidgets.readthedocs.io/en/stable"
-                "/user_install.html")
+            raise ImportError(WARN_NOIPYW)
         if total:
             pbar = IProgress(min=0, max=total)
         else:  # No total? Show info style bar with no progress tqdm status
@@ -150,7 +148,7 @@ class tqdm_notebook(std_tqdm):
 
     def display(self, msg=None, pos=None,
                 # additional signals
-                close=False, bar_style=None):
+                close=False, bar_style=None, check_delay=True):
         # Note: contrary to native tqdm, msg='' does NOT clear bar
         # goal is to keep all infos if error happens so user knows
         # at which iteration the loop failed.
@@ -194,6 +192,11 @@ class tqdm_notebook(std_tqdm):
                 self.container.close()
             except AttributeError:
                 self.container.visible = False
+            self.container.layout.visibility = 'hidden'  # IPYW>=8
+
+        if check_delay and self.delay > 0 and not self.displayed:
+            display(self.container)
+            self.displayed = True
 
     @property
     def colour(self):
@@ -238,19 +241,22 @@ class tqdm_notebook(std_tqdm):
         unit_scale = 1 if self.unit_scale is True else self.unit_scale or 1
         total = self.total * unit_scale if self.total else self.total
         self.container = self.status_printer(self.fp, total, self.desc, self.ncols)
-        self.container.pbar = self
-        if display_here:
+        self.container.pbar = proxy(self)
+        self.displayed = False
+        if display_here and self.delay <= 0:
             display(self.container)
+            self.displayed = True
         self.disp = self.display
         self.colour = colour
 
         # Print initial bar state
         if not self.disable:
-            self.display()
+            self.display(check_delay=False)
 
-    def __iter__(self, *args, **kwargs):
+    def __iter__(self):
         try:
-            for obj in super(tqdm_notebook, self).__iter__(*args, **kwargs):
+            it = super(tqdm_notebook, self).__iter__()
+            for obj in it:
                 # return super(tqdm...) will not catch exception
                 yield obj
         # NB: except ... [ as ...] breaks IPython async KeyboardInterrupt
@@ -260,9 +266,9 @@ class tqdm_notebook(std_tqdm):
         # NB: don't `finally: close()`
         # since this could be a shared bar which the user will `reset()`
 
-    def update(self, *args, **kwargs):
+    def update(self, n=1):
         try:
-            return super(tqdm_notebook, self).update(*args, **kwargs)
+            return super(tqdm_notebook, self).update(n=n)
         # NB: except ... [ as ...] breaks IPython async KeyboardInterrupt
         except:  # NOQA
             # cannot catch KeyboardInterrupt when using manual tqdm
@@ -272,17 +278,19 @@ class tqdm_notebook(std_tqdm):
         # NB: don't `finally: close()`
         # since this could be a shared bar which the user will `reset()`
 
-    def close(self, *args, **kwargs):
-        super(tqdm_notebook, self).close(*args, **kwargs)
+    def close(self):
+        if self.disable:
+            return
+        super(tqdm_notebook, self).close()
         # Try to detect if there was an error or KeyboardInterrupt
         # in manual mode: if n < total, things probably got wrong
         if self.total and self.n < self.total:
-            self.disp(bar_style='danger')
+            self.disp(bar_style='danger', check_delay=False)
         else:
             if self.leave:
-                self.disp(bar_style='success')
+                self.disp(bar_style='success', check_delay=False)
             else:
-                self.disp(close=True)
+                self.disp(close=True, check_delay=False)
 
     def clear(self, *_, **__):
         pass
