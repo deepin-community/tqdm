@@ -27,7 +27,7 @@ iterable with ``tqdm(iterable)``, and you're done!
 ``tqdm(range(N))``.
 
 |Screenshot|
-    |Video| |Slides|
+    |Video| |Slides| |Merch|
 
 It can also be executed as a module with pipes:
 
@@ -140,7 +140,7 @@ Changelog
 The list of all changes is available either on GitHub's Releases:
 |GitHub-Status|, on the
 `wiki <https://github.com/tqdm/tqdm/wiki/Releases>`__, or on the
-`website <https://tqdm.github.io/releases/>`__.
+`website <https://tqdm.github.io/releases>`__.
 
 
 Usage
@@ -462,6 +462,8 @@ Parameters
     The fallback is 20.
 * colour  : str, optional  
     Bar colour (e.g. 'green', '#00ff00').
+* delay  : float, optional  
+    Don't display until [default: 0] seconds have elapsed.
 
 Extra CLI Options
 ~~~~~~~~~~~~~~~~~
@@ -677,7 +679,10 @@ Submodules
         """`rich.progress` version."""
 
     class tqdm.keras.TqdmCallback(keras.callbacks.Callback):
-        """`keras` callback for epoch and batch progress."""
+        """Keras callback for epoch and batch progress."""
+
+    class tqdm.dask.TqdmCallback(dask.callbacks.Callback):
+        """Dask callback for task progress."""
 
 
 ``contrib``
@@ -687,11 +692,12 @@ The ``tqdm.contrib`` package also contains experimental modules:
 
 - ``tqdm.contrib.itertools``: Thin wrappers around ``itertools``
 - ``tqdm.contrib.concurrent``: Thin wrappers around ``concurrent.futures``
-- ``tqdm.contrib.discord``: Posts to `Discord <https://discord.com/>`__ bots
-- ``tqdm.contrib.telegram``: Posts to `Telegram <https://telegram.org/>`__ bots
+- ``tqdm.contrib.slack``: Posts to `Slack <https://slack.com>`__ bots
+- ``tqdm.contrib.discord``: Posts to `Discord <https://discord.com>`__ bots
+- ``tqdm.contrib.telegram``: Posts to `Telegram <https://telegram.org>`__ bots
 - ``tqdm.contrib.bells``: Automagically enables all optional features
 
-  * ``auto``, ``pandas``, ``discord``, ``telegram``
+  * ``auto``, ``pandas``, ``slack``, ``discord``, ``telegram``
 
 Examples and Advanced Usage
 ---------------------------
@@ -801,9 +807,6 @@ Nested progress bars
         for j in trange(5, desc='2nd loop'):
             for k in trange(50, desc='3rd loop', leave=False):
                 sleep(0.01)
-
-On Windows `colorama <https://github.com/tartley/colorama>`__ will be used if
-available to keep nested bars on their respective lines.
 
 For manual control over positioning (e.g. for multi-processing use),
 you may specify ``position=n`` where ``n=0`` for the outermost bar,
@@ -974,7 +977,7 @@ custom callback take advantage of this, simply use the return value of
 
     class TqdmExt(std_tqdm):
         def update(self, n=1):
-            displayed = super(TqdmExt, self).update(n):
+            displayed = super(TqdmExt, self).update(n)
             if displayed:
                 external_callback(**self.format_dict)
             return displayed
@@ -1045,6 +1048,24 @@ A ``keras`` callback is also available:
     ...
 
     model.fit(..., verbose=0, callbacks=[TqdmCallback()])
+
+Dask Integration
+~~~~~~~~~~~~~~~~
+
+A ``dask`` callback is also available:
+
+.. code:: python
+
+    from tqdm.dask import TqdmCallback
+
+    with TqdmCallback(desc="compute"):
+        ...
+        arr.compute()
+
+    # or use callback globally
+    cb = TqdmCallback(desc="global")
+    cb.register()
+    arr.compute()
 
 IPython/Jupyter Integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1164,8 +1185,9 @@ Some submodule examples of inheritance:
 - `tqdm/notebook.py <https://github.com/tqdm/tqdm/blob/master/tqdm/notebook.py>`__
 - `tqdm/gui.py <https://github.com/tqdm/tqdm/blob/master/tqdm/gui.py>`__
 - `tqdm/tk.py <https://github.com/tqdm/tqdm/blob/master/tqdm/tk.py>`__
-- `tqdm/contrib/telegram.py <https://github.com/tqdm/tqdm/blob/master/tqdm/contrib/telegram.py>`__
+- `tqdm/contrib/slack.py <https://github.com/tqdm/tqdm/blob/master/tqdm/contrib/slack.py>`__
 - `tqdm/contrib/discord.py <https://github.com/tqdm/tqdm/blob/master/tqdm/contrib/discord.py>`__
+- `tqdm/contrib/telegram.py <https://github.com/tqdm/tqdm/blob/master/tqdm/contrib/telegram.py>`__
 
 Dynamic Monitor/Meter
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1298,10 +1320,37 @@ A reusable canonical example is given below:
     # After the `with`, printing is restored
     print("Done!")
 
+Redirecting ``logging``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Similar to ``sys.stdout``/``sys.stderr`` as detailed above, console ``logging``
+may also be redirected to ``tqdm.write()``.
+
+Warning: if also redirecting ``sys.stdout``/``sys.stderr``, make sure to
+redirect ``logging`` first if needed.
+
+Helper methods are available in ``tqdm.contrib.logging``. For example:
+
+.. code:: python
+
+    import logging
+    from tqdm import trange
+    from tqdm.contrib.logging import logging_redirect_tqdm
+
+    LOG = logging.getLogger(__name__)
+
+    if __name__ == '__main__':
+        logging.basicConfig(level=logging.INFO)
+        with logging_redirect_tqdm():
+            for i in trange(9):
+                if i == 4:
+                    LOG.info("console logging redirected to `tqdm.write()`")
+        # logging restored
+
 Monitoring thread, intervals and miniters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``tqdm`` implements a few tricks to to increase efficiency and reduce overhead.
+``tqdm`` implements a few tricks to increase efficiency and reduce overhead.
 
 - Avoid unnecessary frequent bar refreshing: ``mininterval`` defines how long
   to wait between each refresh. ``tqdm`` always gets updated in the background,
@@ -1331,6 +1380,11 @@ The monitor thread may be disabled application-wide by setting
 ``tqdm.tqdm.monitor_interval = 0`` before instantiation of any ``tqdm`` bar.
 
 
+Merch
+-----
+
+You can buy `tqdm branded merch <https://tqdm.github.io/merch>`__ now!
+
 Contributions
 -------------
 
@@ -1340,7 +1394,7 @@ All source code is hosted on `GitHub <https://github.com/tqdm/tqdm>`__.
 Contributions are welcome.
 
 See the
-`CONTRIBUTING <https://raw.githubusercontent.com/tqdm/tqdm/master/CONTRIBUTING.md>`__
+`CONTRIBUTING <https://github.com/tqdm/tqdm/blob/master/CONTRIBUTING.md>`__
 file for more information.
 
 Developers who have made significant contributions, ranked by *SLoC*
@@ -1351,18 +1405,15 @@ are:
 ==================== ======================================================== ==== ================================
 Name                 ID                                                       SLoC Notes
 ==================== ======================================================== ==== ================================
-Casper da Costa-Luis `casperdcl <https://github.com/casperdcl>`__             ~81% primary maintainer |Gift-Casper|
+Casper da Costa-Luis `casperdcl <https://github.com/casperdcl>`__             ~78% primary maintainer |Gift-Casper|
 Stephen Larroque     `lrq3000 <https://github.com/lrq3000>`__                 ~10% team member
-Martin Zugnoni       `martinzugnoni <https://github.com/martinzugnoni>`__     ~3%
+Martin Zugnoni       `martinzugnoni <https://github.com/martinzugnoni>`__     ~4%
+Daniel Ecer          `de-code <https://github.com/de-code>`__                 ~2%
 Richard Sheridan     `richardsheridan <https://github.com/richardsheridan>`__ ~1%
 Guangshuo Chen       `chengs <https://github.com/chengs>`__                   ~1%
 Kyle Altendorf       `altendky <https://github.com/altendky>`__               <1%
 Matthew Stevens      `mjstevens777 <https://github.com/mjstevens777>`__       <1%
 Hadrien Mary         `hadim <https://github.com/hadim>`__                     <1%  team member
-Ivan Ivanov          `obiwanus <https://github.com/obiwanus>`__               <1%
-Daniel Panteleit     `danielpanteleit <https://github.com/danielpanteleit>`__ <1%
-Jonas Haag           `jonashaag <https://github.com/jonashaag>`__             <1%
-James E. King III    `jeking3 <https://github.com/jeking3>`__                 <1%
 Noam Yorav-Raphael   `noamraph <https://github.com/noamraph>`__               <1%  original author
 Mikhail Korobov      `kmike <https://github.com/kmike>`__                     <1%  team member
 ==================== ======================================================== ==== ================================
@@ -1383,12 +1434,14 @@ Citation information: |DOI|
 
 |README-Hits| (Since 19 May 2016)
 
-.. |Logo| image:: https://raw.githubusercontent.com/tqdm/tqdm/master/images/logo.gif
-.. |Screenshot| image:: https://raw.githubusercontent.com/tqdm/img/master/tqdm.gif
-.. |Video| image:: https://raw.githubusercontent.com/tqdm/img/master/video.jpg
+.. |Logo| image:: https://img.tqdm.ml/logo.gif
+.. |Screenshot| image:: https://img.tqdm.ml/tqdm.gif
+.. |Video| image:: https://img.tqdm.ml/video.jpg
    :target: https://tqdm.github.io/video
-.. |Slides| image:: https://raw.githubusercontent.com/tqdm/img/master/slides.jpg
+.. |Slides| image:: https://img.tqdm.ml/slides.jpg
    :target: https://tqdm.github.io/PyData2019/slides.html
+.. |Merch| image:: https://img.tqdm.ml/merch.jpg
+   :target: https://tqdm.github.io/merch
 .. |Build-Status| image:: https://img.shields.io/github/workflow/status/tqdm/tqdm/Test/master?logo=GitHub
    :target: https://github.com/tqdm/tqdm/actions?query=workflow%3ATest
 .. |Coverage-Status| image:: https://img.shields.io/coveralls/github/tqdm/tqdm/master?logo=coveralls
@@ -1416,11 +1469,11 @@ Citation information: |DOI|
 .. |GitHub-Updated| image:: https://img.shields.io/github/last-commit/tqdm/tqdm/master.svg?logo=github&logoColor=white&label=pushed
    :target: https://github.com/tqdm/tqdm/pulse
 .. |Gift-Casper| image:: https://img.shields.io/badge/dynamic/json.svg?color=ff69b4&label=gifts%20received&prefix=%C2%A3&query=%24..sum&url=https%3A%2F%2Fcaspersci.uk.to%2Fgifts.json
-   :target: https://caspersci.uk.to/donate
+   :target: https://cdcl.ml/sponsor
 .. |Versions| image:: https://img.shields.io/pypi/v/tqdm.svg
    :target: https://tqdm.github.io/releases
 .. |PyPI-Downloads| image:: https://img.shields.io/pypi/dm/tqdm.svg?label=pypi%20downloads&logo=PyPI&logoColor=white
-   :target: https://pypi.org/project/tqdm
+   :target: https://pepy.tech/project/tqdm
 .. |Py-Versions| image:: https://img.shields.io/pypi/pyversions/tqdm.svg?logo=python&logoColor=white
    :target: https://pypi.org/project/tqdm
 .. |Conda-Forge-Status| image:: https://img.shields.io/conda/v/conda-forge/tqdm.svg?label=conda-forge&logo=conda-forge
@@ -1443,8 +1496,8 @@ Citation information: |DOI|
    :target: https://doi.org/10.5281/zenodo.595120
 .. |binder-demo| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/tqdm/tqdm/master?filepath=DEMO.ipynb
-.. |Screenshot-Jupyter1| image:: https://raw.githubusercontent.com/tqdm/img/master/jupyter-1.gif
-.. |Screenshot-Jupyter2| image:: https://raw.githubusercontent.com/tqdm/img/master/jupyter-2.gif
-.. |Screenshot-Jupyter3| image:: https://raw.githubusercontent.com/tqdm/img/master/jupyter-3.gif
-.. |README-Hits| image:: https://caspersci.uk.to/cgi-bin/hits.cgi?q=tqdm&style=social&r=https://github.com/tqdm/tqdm&l=https://caspersci.uk.to/images/tqdm.png&f=https://raw.githubusercontent.com/tqdm/tqdm/master/images/logo.gif
-   :target: https://caspersci.uk.to/cgi-bin/hits.cgi?q=tqdm&a=plot&r=https://github.com/tqdm/tqdm&l=https://caspersci.uk.to/images/tqdm.png&f=https://raw.githubusercontent.com/tqdm/tqdm/master/images/logo.gif&style=social
+.. |Screenshot-Jupyter1| image:: https://img.tqdm.ml/jupyter-1.gif
+.. |Screenshot-Jupyter2| image:: https://img.tqdm.ml/jupyter-2.gif
+.. |Screenshot-Jupyter3| image:: https://img.tqdm.ml/jupyter-3.gif
+.. |README-Hits| image:: https://caspersci.uk.to/cgi-bin/hits.cgi?q=tqdm&style=social&r=https://github.com/tqdm/tqdm&l=https://img.tqdm.ml/favicon.png&f=https://img.tqdm.ml/logo.gif
+   :target: https://caspersci.uk.to/cgi-bin/hits.cgi?q=tqdm&a=plot&r=https://github.com/tqdm/tqdm&l=https://img.tqdm.ml/favicon.png&f=https://img.tqdm.ml/logo.gif&style=social

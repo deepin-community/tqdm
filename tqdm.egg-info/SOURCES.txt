@@ -11,6 +11,7 @@ logo.png
 pyproject.toml
 setup.cfg
 setup.py
+tests_notebook.ipynb
 tox.ini
 examples/7zx.py
 examples/async_coroutines.py
@@ -31,6 +32,8 @@ tests/py37_asyncio.py
 tests/tests_asyncio.py
 tests/tests_concurrent.py
 tests/tests_contrib.py
+tests/tests_contrib_logging.py
+tests/tests_dask.py
 tests/tests_gui.py
 tests/tests_itertools.py
 tests/tests_keras.py
@@ -58,6 +61,7 @@ tqdm/auto.py
 tqdm/autonotebook.py
 tqdm/cli.py
 tqdm/completion.sh
+tqdm/dask.py
 tqdm/gui.py
 tqdm/keras.py
 tqdm/notebook.py
@@ -78,5 +82,7 @@ tqdm/contrib/bells.py
 tqdm/contrib/concurrent.py
 tqdm/contrib/discord.py
 tqdm/contrib/itertools.py
+tqdm/contrib/logging.py
+tqdm/contrib/slack.py
 tqdm/contrib/telegram.py
 tqdm/contrib/utils_worker.py
