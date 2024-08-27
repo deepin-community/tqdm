@@ -6,10 +6,8 @@ Usage:
 >>> for i in trange(10, token='{token}', channel_id='{channel_id}'):
 ...     ...
 
-![screenshot](https://img.tqdm.ml/screenshot-discord.png)
+![screenshot](https://tqdm.github.io/img/screenshot-discord.png)
 """
-from __future__ import absolute_import
-
 import logging
 from os import getenv
 
@@ -19,7 +17,6 @@ except ImportError:
     raise ImportError("Please `pip install disco-py`")
 
 from ..auto import tqdm as tqdm_auto
-from ..utils import _range
 from .utils_worker import MonoWorker
 
 __author__ = {"github.com/": ["casperdcl"]}
@@ -30,7 +27,7 @@ class DiscordIO(MonoWorker):
     """Non-blocking file-like IO using a Discord Bot."""
     def __init__(self, token, channel_id):
         """Creates a new message in the given `channel_id`."""
-        super(DiscordIO, self).__init__()
+        super().__init__()
         config = ClientConfig()
         config.token = token
         client = Client(config)
@@ -94,10 +91,10 @@ class tqdm_discord(tqdm_auto):
                 kwargs.pop('token', getenv("TQDM_DISCORD_TOKEN")),
                 kwargs.pop('channel_id', getenv("TQDM_DISCORD_CHANNEL_ID")))
             kwargs['mininterval'] = max(1.5, kwargs.get('mininterval', 1.5))
-        super(tqdm_discord, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def display(self, **kwargs):
-        super(tqdm_discord, self).display(**kwargs)
+        super().display(**kwargs)
         fmt = self.format_dict
         if fmt.get('bar_format', None):
             fmt['bar_format'] = fmt['bar_format'].replace(
@@ -107,17 +104,14 @@ class tqdm_discord(tqdm_auto):
         self.dio.write(self.format_meter(**fmt))
 
     def clear(self, *args, **kwargs):
-        super(tqdm_discord, self).clear(*args, **kwargs)
+        super().clear(*args, **kwargs)
         if not self.disable:
             self.dio.write("")
 
 
 def tdrange(*args, **kwargs):
-    """
-    A shortcut for `tqdm.contrib.discord.tqdm(xrange(*args), **kwargs)`.
-    On Python3+, `range` is used instead of `xrange`.
-    """
-    return tqdm_discord(_range(*args), **kwargs)
+    """Shortcut for `tqdm.contrib.discord.tqdm(range(*args), **kwargs)`."""
+    return tqdm_discord(range(*args), **kwargs)
 
 
 # Aliases
