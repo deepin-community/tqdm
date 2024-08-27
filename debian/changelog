@@ -1,3 +1,96 @@
+tqdm (4.66.5-1) sid; urgency=medium
+
+  * Uploading to sid.
+  * Merging upstream version 4.66.5.
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Mon, 05 Aug 2024 10:28:23 +0200
+
+tqdm (4.66.4-2) sid; urgency=medium
+
+  * Uploading to sid.
+  * Rebuilding without changes with python3.12 to get regenerated metadata
+    (Closes: #1077191).
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Sat, 27 Jul 2024 00:32:08 +0200
+
+tqdm (4.66.4-1) sid; urgency=medium
+
+  * Uploading to sid.
+  * Merging upstream version 4.66.4:
+    - any optional non-boolean CLI arguments are passed through python's eval,
+      allowing arbitrary code execution [CVE-2024-34062] (Closes: #1070372).
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Sat, 04 May 2024 18:02:53 +0200
+
+tqdm (4.66.2-3) sid; urgency=medium
+
+  * Uploading to sid.
+  * Updating to standards-version 4.7.0.
+  * Adding python3-setuptools-scm to build-depends so tqdm outputs its
+    version properly, thanks to Michael R. Crusoe <crusoe@debian.org>
+    (Closes: #1069896).
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Sat, 27 Apr 2024 04:54:43 +0200
+
+tqdm (4.66.2-2) sid; urgency=medium
+
+  * Uploading to sid.
+  * Adding python3-dask to build-depends for additional tests.
+  * Running wrap-and-sort on debian files.
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Sat, 02 Mar 2024 09:52:28 +0100
+
+tqdm (4.66.2-1) sid; urgency=medium
+
+  * Uploading to sid.
+  * Merging upstream version 4.66.2.
+  * Adding rules-requires-root field.
+  * Adding vcs fields.
+  * Shortening standards-version field.
+  * Updating homepage field.
+  * Adding upstream-contact field.
+  * Updating source field.
+  * Harmonizing author information in copyright.
+  * Removing uneeded embedding of MPL copy in copyright.
+  * Removing dont-use-setuptools-scm.patch, not needed anymore with new
+    upstream version.
+  * Removing pandas2p1_ignore_warnings.patch, not needed anymore with new
+    upstream version.
+  * Removing python3p12_compat.patch, not needed anymore with new upstream
+    version.
+  * Using dedidated debhelper files for manpages installation.
+  * Using dedidated debhelper files for docs installation.
+  * Using dedidated debhelper files for examples installation.
+  * Reordering dh call in rules for consistency.
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Sat, 02 Mar 2024 09:46:32 +0100
+
+tqdm (4.64.1-4) sid; urgency=medium
+
+  * Uploading to sid.
+  * New maintainer (Closes: #1065236).
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Sat, 02 Mar 2024 09:21:39 +0100
+
+tqdm (4.64.1-3) unstable; urgency=medium
+
+  * orphan
+
+ -- Sandro Tosi <morph@debian.org>  Sat, 02 Mar 2024 01:37:38 -0500
+
+tqdm (4.64.1-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Rebecca N. Palmer ]
+  * Tests: ignore some pandas 2.1 warnings; Closes: #1053946
+  * Stop using deprecated utcfromtimestamp; Closes: #1058160
+
+  [ Andreas Tille ]
+  * Fix d/copyright
+
+ -- Rebecca N. Palmer <rebecca_palmer@zoho.com>  Mon, 29 Jan 2024 20:30:45 +0000
+
 tqdm (4.64.1-1) unstable; urgency=medium
 
   * New upstream release
